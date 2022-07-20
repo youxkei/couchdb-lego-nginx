@@ -1,0 +1,23 @@
+server {
+    listen 6984 ssl http2;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /lego/certificates/${DOMAIN}.crt;
+    ssl_certificate_key /lego/certificates/${DOMAIN}.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:1m;
+    ssl_session_timeout 5m;
+
+    location / {
+        proxy_pass http://couchdb:5984;
+        proxy_set_header Host $host;
+        proxy_buffering off;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Ssl on;
+
+        add_header Access-Control-Allow-Credentials true;
+        add_header Access-Control-Allow-Origin "http://localhost:8080";
+        add_header Access-Control-Allow-Methods "GET, HEAD, POST, PUT, DELETE, COPY, OPTIONS";
+        add_header Access-Control-Allow-Headers "Accept, Authorization, Origin, Content-type, Referer";
+    }
+}

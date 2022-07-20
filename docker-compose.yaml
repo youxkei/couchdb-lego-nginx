@@ -1,0 +1,36 @@
+{
+  version: "3",
+  services: {
+    lego-cron: {
+      build: {
+        context: "./lego-cron",
+        args: ["VERSION=v4.8.0"],
+      },
+      ports: ["0.0.0.0:80:80"],
+      volumes: ["lego:/lego"],
+      environment: ["DOMAIN", "EMAIL", "ZEROSSL_ACCESS_KEY"],
+    },
+    nginx: {
+      image: "nginx:1.23.1",
+      ports: ["0.0.0.0:6984:6984"],
+      volumes: [
+        "lego:/lego:ro",
+        "./nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro",
+      ],
+      environment: ["DOMAIN"],
+      restart: "on-failure",
+    },
+    couchdb: {
+      image: "couchdb:3.2.2",
+      environment: ["COUCHDB_USER", "COUCHDB_PASSWORD"],
+      volumes: [
+        "./couchdb.ini:/opt/couchdb/etc/local.d/00-local.ini",
+        "data:/opt/couchdb/data",
+      ],
+    }
+  },
+  volumes: {
+    lego: {},
+    data: {},
+  },
+}
